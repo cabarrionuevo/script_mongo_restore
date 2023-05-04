@@ -1,4 +1,5 @@
 const aws = require('aws-sdk');
+const fs = require('fs');
 
 
 const credentials = {
@@ -6,24 +7,28 @@ const credentials = {
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
 };
 
-const params = {
-    bucket: process.env.BUCKET_BKP_MONGO   
-}
-
-//Path donde se guardará localmente el archivo del dump
+let s3 = aws.s3({...credentials, apiVersion: '2006-03-01'});
+let inputFolder = 'daily/';
+const filename = `prd-mongo-backed-db-dump.gz`;
 const filePath = process.env.PATH_LOCAL
 
-let s3 = aws.s3({...credentials, apiVersion: '2006-03-01'});
-const nowDate = moment.utc();
-const nowStringDate = nowDate.format('YYYYMMDD');
-let inputFolder = 'campanas/93/';
-const uploadBucket = process.env.UPLOADS_BUCKET;
-// 
-let idPrograma = 93;
-// const filename = `${nowStringDate}_Serefieles.csv`;
-const filename = `20230418_Serefieles.csv`;
+
+const params = {
+    bucket: process.env.BUCKET_BKP_MONGO,
+    key: inputFolder + filename   
+}
+
+const s3Stream = s3.getObject(params,(error,data)=>{
+
+    if(error){
+        console.log(error);
+    }else{
+        const file = path.join(filePath,filename);
+        fs.writeFileSync(file,data.Body);
+        console.log('Objeto descargado y guardado en:',file);
+    }
+});
 
 
+//Path donde se guardará localmente el archivo del dump
 
-
-// module.exports
