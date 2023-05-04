@@ -1,0 +1,25 @@
+{
+  "name": "script_mongo_restore",
+  "version": "1.0.0",
+  "description": "",
+  "main": "App.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/cabarrionuevo/script_mongo_restore.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/cabarrionuevo/script_mongo_restore/issues"
+  },
+  "homepage": "https://github.com/cabarrionuevo/script_mongo_restore#readme",
+  "dependencies": {
+    "express": "~4.16.0",
+    "dotenv": "^5.0.1",
+    "aws-sdk": "^2.334.0"
+  }
+}
