@@ -412,7 +412,7 @@ module.exports = {
                                                 moment
                                                     .utc(duration.as('milliseconds'))
                                                     .format('HH:mm:ss.SSSSSS')
-                                            );
+                                                    db                    );
                                         }
                                         if (lineas !== 0) {
                                             // Se parsea la linea según el orden acordado con Serefieles
