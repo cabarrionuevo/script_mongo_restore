@@ -1,10 +1,7 @@
 const express = require('express');
-const { dropBackupMongo } = require('../../scripts/mongo_restore');
-const router = express.Router();
+let router = express.Router();
+let dropController = require('../../scripts/mongo_restore');
 
-//*****Importamos script
-const dropBackupMongo = require('../../scripts/mongo_restore');
-
-router.get('/dropBackupMongo', dropBackupMongo);
+router.route('/dropBackupMongo').get(dropController.dropBackupMongo);
 
 module.exports = router;

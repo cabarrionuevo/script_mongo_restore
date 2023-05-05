@@ -12,5 +12,7 @@ module.exports = {
     AWS_ACCESS_KEY : process.env.AWS_ACCESS_KEY,
     AWS_SECRET_ACCESS_KEY:  process.env.AWS_SECRET_ACCESS_KEY,
     BUCKET_BKP_MONGO: process.env.BUCKET_BKP_MONGO,
-    PATH_LOCAL: process.env.PATH_LOCAL
+    PATH_LOCAL: process.env.PATH_LOCAL,
+    FILE_IN_BUCKET: process.env.FILE_IN_BUCKET,
+    FOLDER_IN_BUCKET: process.env.FOLDER_IN_BUCKET
 }
