@@ -2,6 +2,7 @@ const aws = require('aws-sdk');
 const fs = require('fs');
 const config = require('../config/config');
 const path = require('path');
+const { exec } = require('child_process');
 
 module.exports = {
     dropBackupMongo: async function (req,res) {
@@ -28,12 +29,34 @@ module.exports = {
                     const file = path.join(filePath, filename);                    
                     fs.writeFileSync(file, data.Body);                                        
                     console.log('Objeto descargado y guardado en:', file);
-                    res.send('Proceso Finalizado correctamente')
+                    res.send('Proceso Finalizado correctamente');                    
                 }
             });
         } catch (error) {
             console.log(error);
             res.send('Proceso finalizado con errores');
         }
+    },
+    shellRestore: async function(req,res){
+        
+        let result = {
+            path:'/home/charly2790/Documentos/prd-mongo-backend-db-dump.gz',
+            filename:'prd-mongo-backend-db-dump.gz'
+        }
+        
+        // Comando para hacer un dump de la base de datos
+        // const cmd = 'mongodump --db mydatabase';
+        // const cmd = `mongorestore --gzip --archive=prd-mongo-backend-db-dump.gz --excludeCollection filebeatlogs`;
+        const cmd = `mongorestore --gzip --archive=${result.path} --excludeCollection filebeatlogs`;
+        
+        // Ejecutar el comando
+        await exec(cmd, (err, stdout, stderr) => {
+          if (err) {
+            console.error(`Error ejecutando el comando: ${err}`);
+            return;
+          }
+          console.log(`stdout: ${stdout}`);
+          console.error(`stderr: ${stderr}`);
+        });
     }
 }
