@@ -4,8 +4,7 @@
   "description": "",
   "main": "App.js",
   "scripts": {
-    "dev":  "export NODE_ENV=default && node App.js",
-    "test": "export NODE_ENV=test && node App.js"
+    "dev":  "export NODE_ENV=default && node App.js"
   },
   "repository": {
     "type": "git",
