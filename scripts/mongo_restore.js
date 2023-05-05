@@ -1,5 +1,8 @@
 const aws = require('aws-sdk');
 const fs = require('fs');
+const config = require('../config/config');
+
+
 module.export = {
     dropBackupMongo: async function () {
         try {
