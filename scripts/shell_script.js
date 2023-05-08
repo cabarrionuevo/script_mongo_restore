@@ -1,20 +1,26 @@
-const { exec } = require('child_process');
+
+const { spawn } = require('child_process');
 
 let result = {
-    path:'/home/charly2790/Documentos/prd-mongo-backend-db-dump.gz',
+    path:'/home/gleegstra/Escritorio/Trabajo/prd-mongo-backend-db-dump.gz',
     filename:'prd-mongo-backend-db-dump.gz'
 }
 
 // Comando para hacer un dump de la base de datos
-// const cmd = 'mongodump --db mydatabase';
-const cmd = 'mongorestore --gzip --archive=prd-mongo-backend-db-dump.gz --excludeCollection filebeatlogs';
+const cmd = 'mongorestore' ;
+const args = ['--gzip' ,`--archive=${result.path}` ,'--excludeCollection', 'filebeatlogs'];
 
 // Ejecutar el comando
-exec(cmd, (err, stdout, stderr) => {
-  if (err) {
-    console.error(`Error ejecutando el comando: ${err}`);
-    return;
-  }
-  console.log(`stdout: ${stdout}`);
-  console.error(`stderr: ${stderr}`);
+const restore = spawn(cmd,args);
+
+restore.stdout.on('data', (data) => {
+  console.log(data.toString());
 });
+
+restore.stderr.on('data', (data) => {
+  console.error(data.toString());
+});
+
+restore.on('exit', (code) => {
+  console.log(`Child exited with code ${code}`);
+}); 

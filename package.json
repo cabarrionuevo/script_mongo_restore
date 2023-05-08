@@ -18,8 +18,8 @@
   },
   "homepage": "https://github.com/cabarrionuevo/script_mongo_restore#readme",
   "dependencies": {
-    "express": "~4.16.0",
+    "aws-sdk": "^2.334.0",
     "dotenv": "^5.0.1",
-    "aws-sdk": "^2.334.0"
+    "express": "~4.16.0"
   }
 }

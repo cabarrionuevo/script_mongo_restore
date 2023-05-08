@@ -2,7 +2,7 @@ const aws = require('aws-sdk');
 const fs = require('fs');
 const config = require('../config/config');
 const path = require('path');
-const { exec } = require('child_process');
+const { spawn } = require('child_process');
 
 module.exports = {
     dropBackupMongo: async function (req,res) {
@@ -38,25 +38,28 @@ module.exports = {
         }
     },
     shellRestore: async function(req,res){
-        
         let result = {
-            path:'/home/charly2790/Documentos/prd-mongo-backend-db-dump.gz',
-            filename:'prd-mongo-backend-db-dump.gz'
+            path:config.PATH_LOCAL+config.FILE_IN_BUCKET,
+            filename:config.FOLDER_IN_BUCKET
         }
         
         // Comando para hacer un dump de la base de datos
-        // const cmd = 'mongodump --db mydatabase';
-        // const cmd = `mongorestore --gzip --archive=prd-mongo-backend-db-dump.gz --excludeCollection filebeatlogs`;
-        const cmd = `mongorestore --gzip --archive=${result.path} --excludeCollection filebeatlogs`;
+        const cmd = 'mongorestore' ;
+        const args = ['--gzip' ,`--archive=${result.path}` ,'--excludeCollection', 'filebeatlogs'];
         
         // Ejecutar el comando
-        await exec(cmd, (err, stdout, stderr) => {
-          if (err) {
-            console.error(`Error ejecutando el comando: ${err}`);
-            return;
-          }
-          console.log(`stdout: ${stdout}`);
-          console.error(`stderr: ${stderr}`);
+        const restore = spawn(cmd,args);
+        
+        restore.stdout.on('data', (data) => {
+          console.log(data.toString());
         });
+        
+        restore.stderr.on('data', (data) => {
+          console.error(data.toString());
+        });
+        
+        restore.on('exit', (code) => {
+          console.log(`Child exited with code ${code}`);
+        }); 
     }
 }
