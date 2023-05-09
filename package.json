@@ -2,9 +2,9 @@
   "name": "script_mongo_restore",
   "version": "1.0.0",
   "description": "",
-  "main": "App.js",
+  "main": "app.js",
   "scripts": {
-    "dev": "export NODE_ENV=default && node App.js"
+    "dev": "export NODE_ENV=default && node app.js"
   },
   "repository": {
     "type": "git",
