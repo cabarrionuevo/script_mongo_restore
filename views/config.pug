@@ -1,0 +1,36 @@
+html
+    head
+        title  Usuarios
+        
+        script (type="text/javascript")
+           
+                var theFiles = e.target.files;
+                var relativePath = theFiles[0].webkitRelativePath;
+                var folder = relativePath.split('/');
+                alert(folder[0])
+            
+    body
+        script.
+            function selectFolder(e) {
+                var theFiles = e.target.files;
+                var relativePath = theFiles[0].webkitRelativePath;
+                var folder = relativePath.split("/");
+
+                let campoPrueba = document.getElementById("path_local");
+
+                campoPrueba.innerHTML = "esto es una prueba";
+
+                alert(folder[0]);
+                }
+                
+        form(action="/download" method="POST")
+            input(type="email" name="email" placeholder="Access key")
+            br
+            input(type="password" name="password" placeholder="Secret key")
+            br
+            input(type="submit" value="Path local")
+            br
+            input(type="text", name="" id="path_local")
+            br
+            input(type="file" id="FileUpload" onchange="selectFolder(event)" webkitdirectory mozdirectory msdirectory odirectory directory multiple)
+            

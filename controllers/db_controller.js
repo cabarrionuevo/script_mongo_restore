@@ -23,6 +23,9 @@ function restore(cmd,args) {
 }
 
 module.exports = {
+    new: async function (req,res){
+        res.render('config');
+    },
     download: async function (req,res) {
         try {
             //credenciales las pide por formulario
@@ -45,7 +48,7 @@ module.exports = {
             };
             
             let client = new S3Client({
-                region:'us-east-2',
+                region: config.AWS_REGION,
                 credentials
             })
 
