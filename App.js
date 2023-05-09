@@ -1,8 +1,8 @@
 const express = require('express');
 const app = express();
 
-const routeCronTester = require('./controllers/cronTester/cronTester');
+const dbRoutes = require('./routes/db_routes');
 
-app.use('/cronTester',routeCronTester);
+app.use('/db',dbRoutes);
 
 app.listen(3000);
