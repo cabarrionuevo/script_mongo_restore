@@ -5,17 +5,17 @@ html
         form(action="/db/download" method="POST")
             label( for="access_key") Access Key:
             br            
-            input(type="password" name="access_key" placeholder="Access key")
+            input(type="password" name="access_key" placeholder="Access key" required)
             br
             br
             label( for="secret_key") Secret Key:
             br
-            input(type="password" name="secret_key" placeholder="Secret key")
+            input(type="password" name="secret_key" placeholder="Secret key" required)
             br
             br            
             label( for="path_local") Path local:
             br
-            input(type="text" name="path_local" placeholder="Ruta destino")
+            input(type="text" name="path_local" placeholder="Ruta destino" required)
             br
             br
             p Motor de base de datos a restaurar:            

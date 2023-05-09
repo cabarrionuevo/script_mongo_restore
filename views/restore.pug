@@ -1,0 +1,15 @@
+html
+    head
+        title  Usuarios        
+    body                       
+        form(action="/db/restore" method="POST")
+            h2 Usted esta por restaurar:
+            p Base de Datos: #{context.dbSelection}       
+            input(type="hidden" name="dbSelection" value= `${context.dbSelection}` readonly required)
+            label(for="download_path") Archivo a restaurar #{context.filename}
+            br 
+            input(type="text" name="download_path" value=`${context.downloadPath}` readonly required)
+            br
+            br
+            input(type="submit" value="Restore")
+            

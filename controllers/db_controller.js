@@ -5,9 +5,10 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 
-function restore(cmd,args) {
+async function restore(cmd,args) {
             // Ejecutar el comando
             const restore = spawn(cmd,args);
+            let status;
         
             restore.stdout.on('data', (data) => {
               console.log(data.toString());
@@ -15,26 +16,26 @@ function restore(cmd,args) {
             
             restore.stderr.on('data', (data) => {
               console.error(data.toString());
+              status=false;
             });
             
             restore.on('exit', (code) => {
               console.log(`Child exited with code ${code}`);
+              status=true;
             }); 
+
+            return status;
 }
 
 module.exports = {
-    new: async function (req,res){
-        res.render('config');
-    },
     download: async function (req,res) {
-                        
-        let dbSelection = req.body.backup_selection;        
-        let inputFolder="", filename="";
-        
-        console.log(req.body);
-        
-        
-        try {
+        if (req.method == "GET") {
+            return res.render('download');
+        }
+
+        try {            
+            let dbSelection = req.body.backup_selection;        
+            let inputFolder="", filename="";
             
             //credenciales las pide por formulario
             const credentials = {
@@ -47,16 +48,8 @@ module.exports = {
             const filePath = req.body.path_local;
 
             //variables bucket se defiene en archivo env depende del checkbox elegido
-            if (dbSelection == 'mongo'){                
-                inputFolder =   config.FOLDER_IN_BUCKET_MONGO
-                filename =    config.FILE_IN_BUCKET_MONGO
-            }else{
-                inputFolder =   config.FOLDER_IN_BUCKET_POSTGRES
-                filename =    config.FILE_IN_BUCKET_POSTGRES
-            }
-            
-            
-            //se tiene que crear 2 variables mas para la otra base a descargar
+            dbSelection == 'mongo'? inputFolder = config.FOLDER_IN_BUCKET_MONGO : inputFolder =   config.FOLDER_IN_BUCKET_POSTGRES
+            dbSelection == 'mongo'? filename    = config.FILE_IN_BUCKET_MONGO   : filename    =   config.FILE_IN_BUCKET_POSTGRES
 
             const params = {
                 Bucket: config.BUCKET_BKP,
@@ -76,31 +69,35 @@ module.exports = {
 
             outStream.on('finish',()=>{
                 console.log('Objeto descargado y guardado en:', downloadPath);
-                res.send(`Objeto descargado y guardado en: ${downloadPath}`);
+                context={
+                    downloadPath,
+                    filename,
+                    dbSelection
+                }
+                return res.render('restore', {context});
             });                         
 
         } catch (error) {
             console.log(error);
-            res.send('Proceso finalizado con errores');
+            res.send('Process finished with errors');
         }
     },
     restore: async function(req,res){
-
-        let result = {
-            path:config.PATH_LOCAL+config.FILE_IN_BUCKET,
-            filename:config.FOLDER_IN_BUCKET
+        try{
+            let cmd,args ='';
+            if (req.body.dbSelection == 'mongo') {
+             // Comando para hacer un dump de la base de datos
+             cmd = 'mongorestore' ;
+             args = ['--gzip' ,'--drop','-d','mongo-backend',`--archive=${req.body.downloadPath}` ,'--excludeCollection', 'filebeatlogs'];           
+            }else{
+             cmd = 'psql';
+             args=['-U', 'postgres', '-d', 'backend', '-1', '-f',`${req.body.downloadPath}`]; 
+            }
+            let result = await restore(cmd,args);
+            result? res.send('Restore successful'): res.send('Upps it was a problem');
+        }catch (error){
+            console.log(error);
+            res.send('Uppps something was wrong');
         }
-
-        let cmd,args ='';
-
-        if (filename.incluide('mongo')) {
-         // Comando para hacer un dump de la base de datos
-         cmd = 'mongorestore' ;
-         args = ['--gzip' ,'--drop','-d','mongo-backend',`--archive=${result.path}` ,'--excludeCollection', 'filebeatlogs'];           
-        }else{
-         cmd = 'psql';
-         args=['-U', 'postgres', '-d', 'backend', '-1', '-f',`${result.path}`]; 
-        }
-        restore(cmd,args);
     }
 }
