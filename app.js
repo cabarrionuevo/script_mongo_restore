@@ -5,4 +5,4 @@ const dbRoutes = require('./routes/db_routes');
 
 app.use('/db',dbRoutes);
 
-app.listen(4000);
+app.listen(3000);
