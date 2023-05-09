@@ -57,7 +57,7 @@ module.exports = {
 
             outStream.on('finish',()=>{
                 console.log('Objeto descargado y guardado en:', downloadPath);
-                res.send('Objeto descargado y guardado en:',downloadPath);
+                res.send(`Objeto descargado y guardado en: ${downloadPath}`);
             });                           
 
         } catch (error) {
