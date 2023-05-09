@@ -27,6 +27,14 @@ module.exports = {
         res.render('config');
     },
     download: async function (req,res) {
+        // let accessKey = req.body.access_key;
+        // let secretKey = req.body.secret_key;
+        // let path = req.body.path_local;
+        // let radioBtnValue = req.body.backup_selection;
+        
+        console.log(req.body);
+
+        
         try {
             //credenciales las pide por formulario
             const credentials = {
