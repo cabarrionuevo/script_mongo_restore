@@ -1,4 +1,5 @@
 const express = require('express');
+const bodyParser = require('body-parser');
 const app = express();
 const bodyParser = require('body-parser');
 
@@ -9,6 +10,8 @@ app.use(bodyParser.urlencoded({
 })); 
 
 app.set('view engine','pug');
+
+app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/db',dbRoutes);
 

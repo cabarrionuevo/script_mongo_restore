@@ -26,30 +26,36 @@ module.exports = {
     new: async function (req,res){
         res.render('config');
     },
-    download: async function (req,res) {      
+    download: async function (req,res) {
+                        
+        let dbSelection = req.body.backup_selection;        
+        let inputFolder="", filename="";
+        
+        console.log(req.body);
+        
+        
         try {
             
             //credenciales las pide por formulario
             const credentials = {
                 accessKeyId: req.body.access_key,
-                secretAccessKey: req.body.secret_key,
+                secretAccessKey: req.body.secret_key
             };
 
             //se recibe por formulario            
-            const filePath =    req.body.path_local;
+            // const filePath =    config.PATH_LOCAL;
+            const filePath = req.body.path_local;
 
-            let inputFolder, filename = "";
-
-            if (req.body.backup_selection === "mongo") {
-                //variables bucket se defiene en archivo env depende del checkbox elegido
-                inputFolder =   config.FOLDER_IN_BUCKET_MONGO;
-                filename    =   config.FILE_IN_BUCKET_MONGO;
+            //variables bucket se defiene en archivo env depende del checkbox elegido
+            if (dbSelection == 'mongo'){                
+                inputFolder =   config.FOLDER_IN_BUCKET_MONGO
+                filename =    config.FILE_IN_BUCKET_MONGO
             }else{
-                inputFolder =   config.FOLDER_IN_BUCKET_POSTGRES;
-                filename    =   config.FILE_IN_BUCKET_POSTGRES;
+                inputFolder =   config.FOLDER_IN_BUCKET_POSTGRES
+                filename =    config.FILE_IN_BUCKET_POSTGRES
             }
-
-
+            
+            
             //se tiene que crear 2 variables mas para la otra base a descargar
 
             const params = {
