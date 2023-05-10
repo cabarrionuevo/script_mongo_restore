@@ -7,7 +7,7 @@ const { spawn } = require('child_process');
 
 async function restore(cmd,args) {
             // Ejecutar el comando
-            const restore = spawn(cmd,args);
+            let restore = spawn(cmd,args);
             let status;
         
             restore.stdout.on('data', (data) => {
@@ -38,20 +38,19 @@ module.exports = {
             let inputFolder="", filename="";
             
             //credenciales las pide por formulario
-            const credentials = {
+            let credentials = {
                 accessKeyId: req.body.access_key,
                 secretAccessKey: req.body.secret_key
             };
 
             //se recibe por formulario            
-            // const filePath =    config.PATH_LOCAL;
-            const filePath = req.body.path_local;
+            let filePath = req.body.path_local;
 
             //variables bucket se defiene en archivo env depende del checkbox elegido
             dbSelection == 'mongo'? inputFolder = config.FOLDER_IN_BUCKET_MONGO : inputFolder =   config.FOLDER_IN_BUCKET_POSTGRES
             dbSelection == 'mongo'? filename    = config.FILE_IN_BUCKET_MONGO   : filename    =   config.FILE_IN_BUCKET_POSTGRES
 
-            const params = {
+            let params = {
                 Bucket: config.BUCKET_BKP,
                 Key: inputFolder + filename,
             };
@@ -63,8 +62,8 @@ module.exports = {
 
             let data = await client.send(new GetObjectCommand(params));
             let inputStream = data.Body;
-            const downloadPath = path.join(filePath, filename); 
-            const outStream = fs.createWriteStream(downloadPath);
+            let downloadPath = path.join(filePath, filename); 
+            let outStream = fs.createWriteStream(downloadPath);
             inputStream.pipe(outStream);
 
             outStream.on('finish',()=>{
