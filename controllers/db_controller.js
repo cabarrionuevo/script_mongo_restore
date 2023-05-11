@@ -5,7 +5,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 
-async function restore(cmd,args) {
+async function runInShell(cmd,args) {
             // Ejecutar el comando
             let restore = spawn(cmd,args);
             let status;
@@ -89,10 +89,10 @@ module.exports = {
              cmd = 'mongorestore' ;
              args = ['--gzip' ,'--drop','-d','mongo-backend',`--archive=${req.body.downloadPath}` ,'--excludeCollection', 'filebeatlogs'];           
             }else{
-             cmd = 'psql';
+             cmd = 'ps_restore';
              args=['-U', 'postgres', '-d', 'backend', '-1', '-f',`${req.body.downloadPath}`]; 
             }
-            let result = await restore(cmd,args);
+            let result = await runInShell(cmd,args);
             result? res.send('Restore successful'): res.send('Upps it was a problem');
         }catch (error){
             console.log(error);
