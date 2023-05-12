@@ -5,26 +5,22 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 
-async function runInShell(cmd, args) {
-    // Ejecutar el comando
-    let restore = spawn(cmd, args);
-    let status;
+async function runInShell(cmd, args,env=null) {
+        let e;
+        cmd==='pg_restore'? e='close': e='exit';
+        let restore = spawn(cmd, args,{env});
+        restore.on('error',(err)=>{
+            console.error(`Error al ejecutar proceso ${cmd}`);
+        });
 
-    restore.stdout.on('data', (data) => {
-        console.log(data.toString());
-    });
-
-    restore.stderr.on('data', (data) => {
-        console.error(data.toString());
-        status = false;
-    });
-
-    restore.on('exit', (code) => {
-        console.log(`Child exited with code ${code}`);
-        status = true;
-    });
-
-    return status;
+        restore.on("'"+`'${e}'`+"'", (code) => {
+            console.log(`proceso ${cmd} termino con codigo: ${code}`);
+            if(code === 0){
+                return true;
+            }else{
+                return false;
+            }
+        });
 }
 
 module.exports = {
@@ -84,31 +80,42 @@ module.exports = {
     restore: async function (req, res) {
         try {
             let cmd, args = '';
+            let result;
             if (req.body.dbSelection == 'mongo') {
                 // Comando para hacer un dump de la base de datos
                 cmd = 'mongorestore';
                 args = ['--gzip', '--drop', '-d', 'mongo-backend', `--archive=${req.body.downloadPath}`, '--excludeCollection', 'filebeatlogs'];
 
-                let result = await runInShell(cmd, args);
+                result = await runInShell(cmd, args);
             } else {
 
                 let pathUnzip = req.body.downloadPath;
-                let ultimoSlash = pathUnzip.lastIndexOf("/");                
+                let ultimoSlash = pathUnzip.lastIndexOf("/");
 
                 pathUnzip = pathUnzip.substring(0, ultimoSlash + 1);
-                
+
                 cmd = 'unzip';
-                args = [req.body.downloadPath,'-d',pathUnzip];                
-                
-                spawn(cmd,args);
+                args = [req.body.downloadPath, '-d', pathUnzip];
 
-                pathUnzip = pathUnzip + req.body.downloadPath.substring(ultimoSlash+1,req.body.downloadPath.lastIndexOf(".")); 
-                
+                spawn(cmd, args);
+
                 cmd = 'pg_restore';
-                
-                args=['-U', 'postgres','-w', '-d', 'backend', '-1',`${pathUnzip}`];
+                pathUnzip = pathUnzip + req.body.downloadPath.substring(ultimoSlash + 1, req.body.downloadPath.lastIndexOf("."));
 
-                let result = await runInShell(cmd, args);
+                args=[
+                    '--host','localhost',
+                    '--dbname','backend',
+                    '--username','postgres',
+                    '--if-exists', '-c',
+                    '-e', 
+                    '--verbose',pathUnzip
+                    ];
+                
+                let env = {
+                    PGPASSWORD: 'postgres'
+                } 
+                  
+                runInShell(cmd,args,env);         
             }
 
             result ? res.send('Restore successful') : res.send('Upps it was a problem');
@@ -118,3 +125,4 @@ module.exports = {
         }
     }
 }
+
