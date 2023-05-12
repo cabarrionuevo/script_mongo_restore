@@ -5,22 +5,32 @@ const path = require('path');
 const { spawn } = require('child_process');
 
 
-async function runInShell(cmd, args,env=null) {
-        let e;
-        cmd==='pg_restore'? e='close': e='exit';
-        let restore = spawn(cmd, args,{env});
-        restore.on('error',(err)=>{
+function runInShell(cmd, args, env = null) {
+    return new Promise((resolve, reject) => {
+        let e, restore;
+        cmd === 'pg_restore' ? e = 'close' : e = 'exit';
+        !env ? restore = spawn(cmd, args) : restore = spawn(cmd, args, { env });
+        restore.on('error', (err) => {
             console.error(`Error al ejecutar proceso ${cmd}`);
         });
 
-        restore.on("'"+`'${e}'`+"'", (code) => {
+        restore.stdout.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        restore.stderr.on('data', (data) => {
+            console.log(data.toString());
+        });
+
+        restore.on(`${e}`, (code) => {
             console.log(`proceso ${cmd} termino con codigo: ${code}`);
-            if(code === 0){
-                return true;
-            }else{
-                return false;
+            if (code === 0) {
+                resolve(true);
+            } else {
+                resolve(false);
             }
         });
+    });
 }
 
 module.exports = {
@@ -87,6 +97,7 @@ module.exports = {
                 args = ['--gzip', '--drop', '-d', 'mongo-backend', `--archive=${req.body.downloadPath}`, '--excludeCollection', 'filebeatlogs'];
 
                 result = await runInShell(cmd, args);
+
             } else {
 
                 let pathUnzip = req.body.downloadPath;
@@ -102,20 +113,20 @@ module.exports = {
                 cmd = 'pg_restore';
                 pathUnzip = pathUnzip + req.body.downloadPath.substring(ultimoSlash + 1, req.body.downloadPath.lastIndexOf("."));
 
-                args=[
-                    '--host','localhost',
-                    '--dbname','backend',
-                    '--username','postgres',
+                args = [
+                    '--host', 'localhost',
+                    '--dbname', 'backend',
+                    '--username', 'postgres',
                     '--if-exists', '-c',
-                    '-e', 
-                    '--verbose',pathUnzip
-                    ];
-                
+                    '-e',
+                    '--verbose', pathUnzip
+                ];
+
                 let env = {
                     PGPASSWORD: 'postgres'
-                } 
-                  
-                runInShell(cmd,args,env);         
+                }
+
+                result = await runInShell(cmd, args,env);
             }
 
             result ? res.send('Restore successful') : res.send('Upps it was a problem');
