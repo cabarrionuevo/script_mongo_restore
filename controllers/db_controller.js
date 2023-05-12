@@ -8,6 +8,7 @@ const { spawn } = require('child_process');
 function runInShell(cmd, args, env = null) {
     return new Promise((resolve, reject) => {
         let e, restore;
+        e='close';
         cmd === 'pg_restore' ? e = 'close' : e = 'exit';
         !env ? restore = spawn(cmd, args) : restore = spawn(cmd, args, { env });
         restore.on('error', (err) => {
@@ -92,7 +93,7 @@ module.exports = {
             let cmd, args = '';
             let result;
             if (req.body.dbSelection == 'mongo') {
-                // Comando para hacer un dump de la base de datos
+
                 cmd = 'mongorestore';
                 args = ['--gzip', '--drop', '-d', 'mongo-backend', `--archive=${req.body.downloadPath}`, '--excludeCollection', 'filebeatlogs'];
 
@@ -108,7 +109,7 @@ module.exports = {
                 cmd = 'unzip';
                 args = [req.body.downloadPath, '-d', pathUnzip];
 
-                spawn(cmd, args);
+                result =  await runInShell(cmd, args);
 
                 cmd = 'pg_restore';
                 pathUnzip = pathUnzip + req.body.downloadPath.substring(ultimoSlash + 1, req.body.downloadPath.lastIndexOf("."));
