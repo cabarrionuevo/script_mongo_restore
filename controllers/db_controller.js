@@ -107,7 +107,8 @@ module.exports = {
                 pathUnzip = pathUnzip.substring(0, ultimoSlash + 1);
 
                 cmd = 'unzip';
-                args = [req.body.downloadPath, '-d', pathUnzip];
+                
+                args = ['-o',req.body.downloadPath,'-d', pathUnzip];
 
                 result =  await runInShell(cmd, args);
 
@@ -116,15 +117,15 @@ module.exports = {
 
                 args = [
                     '--host', 'localhost',
-                    '--dbname', 'backend',
-                    '--username', 'postgres',
+                    '--dbname', 'backend',                                    
+                    '--username',`${req.body.usuario_postgres}`,
                     '--if-exists', '-c',
                     '-e',
                     '--verbose', pathUnzip
                 ];
 
                 let env = {
-                    PGPASSWORD: 'postgres'
+                    PGPASSWORD: `${req.body.pass_postgres}`                    
                 }
 
                 result = await runInShell(cmd, args,env);
