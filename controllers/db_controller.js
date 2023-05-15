@@ -3,6 +3,7 @@ const fs = require('fs');
 const config = require('../config/config');
 const path = require('path');
 const { spawn } = require('child_process');
+const { CLient } = require('pg');
 
 
 function runInShell(cmd, args, env = null) {
@@ -136,6 +137,13 @@ module.exports = {
             console.log(error);
             res.send('Uppps something was wrong');
         }
-    }
+    },
+    mask: async function (req,res){
+
+        const pgCon = new Client({
+            user: req.body
+        });
+    },
+
 }
 
