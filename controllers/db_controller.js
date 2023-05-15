@@ -7,11 +7,18 @@ const {Pool} = require('pg');
 
 const pgStrCon={
                 'host':config.PG_HOST,
-                'dbname':config.PG_DBNAME,
+                'database':config.PG_DBNAME,
                 'port':config.PG_PORT,
                 'user':'postgres',
                 'password':'postgres'
             };
+
+const prefix = 'dev-';
+const hostsDoc="hosts.txt";
+
+let pathWorkSpace="/home/gleegstra/Escritorio/Trabajo/";
+
+
 
 function runInShell(cmd, args, env = null) {
     return new Promise((resolve, reject) => {
@@ -60,6 +67,8 @@ module.exports = {
 
             //se recibe por formulario            
             let filePath = req.body.path_local;
+
+            pathWorkSpace=filePath;
 
             //variables bucket se defiene en archivo env depende del checkbox elegido
             dbSelection == 'mongo' ? inputFolder = config.FOLDER_IN_BUCKET_MONGO : inputFolder = config.FOLDER_IN_BUCKET_POSTGRES
@@ -152,13 +161,34 @@ module.exports = {
         res.send('desde mask');
     },
     hosts: async function(req,res){
-        let pgPool = new Pool(pgStrCon);
-        let pgCliente = await pgPool.connect();
-        let query = "SELECT now();" //ver porque tira error cuando hago 'SELECT url FROM programas';
-        let results = await pgCliente.query(query);
-        console.log(results.rows);
-        pgCliente.release();
-        await pgPool.end();
+        try {
+            let pgPool = new Pool(pgStrCon);
+            let pgClient = await pgPool.connect();
+            let query = `SELECT "idPrograma",url FROM programas;`;
+            let results = await pgClient.query(query);
+            pgClient.release();
+            await pgPool.end();
+            if (results.rows.length > 0);{
+                if(pathWorkSpace===""){
+                    pathWorkSpace="/";
+                }
+                let pathDoc=`${pathWorkSpace}`+`${hostsDoc}`;  
+                let stream = fs.createWriteStream(pathDoc);
+                results.rows.forEach((row)=>{
+                    stream.write(`127.0.0.1     ${prefix}${row.url}\n`);
+                    stream.write(`127.0.0.1     api.${prefix}${row.url}\n\n`);
+
+                    //pgClient.query(`UPDATE programas SET url = ${prefix}${row.url} WHERE "idPrograma" = ${row.idPrograma}`);
+                });
+            
+                stream.end();
+                stream.on('close',()=>{
+                    res.send(`El archivo ${hostsDoc} fue creado se encuentra en la ruta ${pathWorkSpace}`);
+                });  
+            } 
+        } catch (error) {
+         console.log(error);   
+        }
     }
 }
 
