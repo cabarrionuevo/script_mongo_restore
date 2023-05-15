@@ -3,8 +3,15 @@ const fs = require('fs');
 const config = require('../config/config');
 const path = require('path');
 const { spawn } = require('child_process');
-const { CLient } = require('pg');
+const {Pool} = require('pg');
 
+const pgStrCon={
+                'host':config.PG_HOST,
+                'dbname':config.PG_DBNAME,
+                'port':config.PG_PORT,
+                'user':'postgres',
+                'password':'postgres'
+            };
 
 function runInShell(cmd, args, env = null) {
     return new Promise((resolve, reject) => {
@@ -127,7 +134,10 @@ module.exports = {
 
                 let env = {
                     PGPASSWORD: `${req.body.pass_postgres}`                    
-                }
+                };
+
+                pgStrCon.user=`${req.body.usuario_postgres}`;
+                pgStrCon.password = `${req.body.pass_postgres}`;
 
                 result = await runInShell(cmd, args,env);
             }
@@ -138,12 +148,17 @@ module.exports = {
             res.send('Uppps something was wrong');
         }
     },
-    mask: async function (req,res){
-
-        const pgCon = new Client({
-            user: req.body
-        });
+    mask: async function(req,res){
+        res.send('desde mask');
     },
-
+    hosts: async function(req,res){
+        let pgPool = new Pool(pgStrCon);
+        let pgCliente = await pgPool.connect();
+        let query = "SELECT now();" //ver porque tira error cuando hago 'SELECT url FROM programas';
+        let results = await pgCliente.query(query);
+        console.log(results.rows);
+        pgCliente.release();
+        await pgPool.end();
+    },
 }
 

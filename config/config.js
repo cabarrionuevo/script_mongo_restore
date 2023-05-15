@@ -18,7 +18,7 @@ module.exports = {
     FILE_IN_BUCKET_POSTGRES: process.env.FILE_IN_BUCKET_POSTGRES,
     FOLDER_IN_BUCKET_MONGO: process.env.FOLDER_IN_BUCKET_MONGO,
     FOLDER_IN_BUCKET_POSTGRES: process.env.FOLDER_IN_BUCKET_POSTGRES,
-    PG_HOST:process.env.PG_HOST,
-    PG_DB_NAME:process.env.PG_DB_NAME,
-    PG_PORT:process.env.PG_PORT
+    PG_HOST: process.env.PG_HOST,
+    PG_DBNAME: process.env.PG_DBNAME,
+    PG_PORT: process.env.PG_PORT
 }
