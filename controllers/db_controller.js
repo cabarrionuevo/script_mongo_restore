@@ -4,6 +4,7 @@ const config = require('../config/config');
 const path = require('path');
 const { spawn } = require('child_process');
 const {Pool} = require('pg');
+const { ifError } = require('assert');
 
 const pgStrCon={
                 'host':config.PG_HOST,
@@ -162,6 +163,7 @@ module.exports = {
     },
     hosts: async function(req,res){
         try {
+            let updates = 0;
             let pgPool = new Pool(pgStrCon);
             let pgClient = await pgPool.connect();
             let query = `SELECT "idPrograma",url FROM programas;`;
@@ -169,21 +171,31 @@ module.exports = {
             pgClient.release();
             await pgPool.end();
             if (results.rows.length > 0);{
+                let updateQuery='UPDATE programas SET url=$1 WHERE url = $2';
+
                 if(pathWorkSpace===""){
                     pathWorkSpace="/";
                 }
                 let pathDoc=`${pathWorkSpace}`+`${hostsDoc}`;  
                 let stream = fs.createWriteStream(pathDoc);
-                results.rows.forEach((row)=>{
-                    stream.write(`127.0.0.1     ${prefix}${row.url}\n`);
-                    stream.write(`127.0.0.1     api.${prefix}${row.url}\n\n`);
+                results.rows.forEach(async (row)=>{
+                    try{
+                        stream.write(`127.0.0.1     ${prefix}${row.url}\n`);
+                        stream.write(`127.0.0.1     api.${prefix}${row.url}\n\n`);
+                        let pgPool= new Pool(pgStrCon); 
+                        let pgClient = await pgPool.connect();
+                        updates+=(await pgClient.query(updateQuery,[`${prefix}${row.url}`,`${row.url}`])).rowCount;
+                        pgClient.release();
+                        await pgPool.end();
 
-                    //pgClient.query(`UPDATE programas SET url = ${prefix}${row.url} WHERE "idPrograma" = ${row.idPrograma}`);
+                    }catch(error){
+                        console.log(error);
+                    }
                 });
-            
+
                 stream.end();
                 stream.on('close',()=>{
-                    res.send(`El archivo ${hostsDoc} fue creado se encuentra en la ruta ${pathWorkSpace}`);
+                    res.send(`El archivo ${hostsDoc} fue creado se encuentra en la ruta ${pathWorkSpace}\n Las rutas actualizadas son ${updates}`);
                 });  
             } 
         } catch (error) {
