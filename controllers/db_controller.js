@@ -7,7 +7,7 @@ const {Pool} = require('pg');
 
 const pgStrCon={
                 'host':config.PG_HOST,
-                'dbname':config.PG_DBNAME,
+                'database':config.PG_DBNAME,
                 'port':config.PG_PORT,
                 'user':'postgres',
                 'password':'postgres'
@@ -154,7 +154,8 @@ module.exports = {
     hosts: async function(req,res){
         let pgPool = new Pool(pgStrCon);
         let pgCliente = await pgPool.connect();
-        let query = "SELECT now();" //ver porque tira error cuando hago 'SELECT url FROM programas';
+        // let query = "SELECT now();" //ver porque tira error cuando hago 'SELECT url FROM programas';
+        let query = `SELECT url FROM programas;`;
         let results = await pgCliente.query(query);
         console.log(results.rows);
         pgCliente.release();
