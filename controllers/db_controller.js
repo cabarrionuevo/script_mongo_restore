@@ -19,6 +19,17 @@ const hostsDoc="hosts.txt";
 
 let pathWorkSpace="/home/gleegstra/Escritorio/Trabajo/";
 
+const pgClient={
+    query: async(pgStrCon,strQuery)=>{
+        let pgPool = new Pool(pgStrCon);
+        let client = await pgPool.connect();
+        let result= await client.query(strQuery);
+        client.release();
+        await pgPool.end();
+        return result;
+    }
+}
+
 
 
 function runInShell(cmd, args, env = null) {
