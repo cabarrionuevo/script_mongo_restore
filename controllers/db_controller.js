@@ -4,6 +4,7 @@ const config = require('../config/config');
 const path = require('path');
 const { spawn } = require('child_process');
 const {Pool} = require('pg');
+const { ifError } = require('assert');
 
 const pgStrCon={
                 'host':config.PG_HOST,
@@ -12,6 +13,34 @@ const pgStrCon={
                 'user':'postgres',
                 'password':'postgres'
             };
+
+
+const pgClient={
+    query: async(pgStrCon,strQuery)=>{
+        let pgPool = new Pool(pgStrCon);
+        let client = await pgPool.connect();
+        let result= await client.query(strQuery);
+        client.release();
+        await pgPool.end();
+        return result;
+    }
+}
+
+const prefix = config.PREFIX_LOCALHOST_URL;
+const hostsDoc="hosts.txt";
+
+let pathWorkSpace="/home/charly2790/Documentos/";
+
+async function openDbConnection(StrConecction){
+    let pgPool = new Pool(pgStrCon);
+    
+    return pgClient = await pgPool.connect();
+}
+
+async function closeDbConnection(pgClient,pgPool){
+    pgClient.release();
+    await pgPool.end();
+}
 
 function runInShell(cmd, args, env = null) {
     return new Promise((resolve, reject) => {
@@ -60,6 +89,8 @@ module.exports = {
 
             //se recibe por formulario            
             let filePath = req.body.path_local;
+
+            pathWorkSpace=filePath;
 
             //variables bucket se defiene en archivo env depende del checkbox elegido
             dbSelection == 'mongo' ? inputFolder = config.FOLDER_IN_BUCKET_MONGO : inputFolder = config.FOLDER_IN_BUCKET_POSTGRES
@@ -152,14 +183,62 @@ module.exports = {
         res.send('desde mask');
     },
     hosts: async function(req,res){
-        let pgPool = new Pool(pgStrCon);
-        let pgCliente = await pgPool.connect();
-        // let query = "SELECT now();" //ver porque tira error cuando hago 'SELECT url FROM programas';
-        let query = `SELECT url FROM programas;`;
-        let results = await pgCliente.query(query);
-        console.log(results.rows);
-        pgCliente.release();
-        await pgPool.end();
-    },
+        try {
+            let msjeResponse = "";
+            let pgPool = new Pool(pgStrCon);
+            let pgClient = await pgPool.connect();
+            let query = `SELECT "idPrograma",url FROM programas;`;
+            let results = await pgClient.query(query);
+            pgClient.release();
+            await pgPool.end();
+            if (results.rows.length > 0);{
+
+                let updateQuery = `UPDATE programas SET url=CONCAT('${prefix}',url)`;
+
+                if(pathWorkSpace===""){
+                    pathWorkSpace="/";
+                }
+                
+                let pathDoc=`${pathWorkSpace}`+`${hostsDoc}`;  
+                let stream = fs.createWriteStream(pathDoc);
+                results.rows.forEach(async (row)=>{
+                    try{
+                        stream.write(`127.0.0.1     ${prefix}${row.url}\n`);
+                        stream.write(`127.0.0.1     api.${prefix}${row.url}\n\n`);
+
+                    }catch(error){
+                        console.log(error);
+                    }
+                });
+
+                try{
+                    let pgPool= new Pool(pgStrCon); 
+                    let pgClient = await pgPool.connect();
+
+                    let cantRegistrosAfectados = (await pgClient.query(updateQuery)).rowCount;
+
+                    // let cantRegistrosAfectados= await pgClient.query(pgStrCon,updateQuery);
+
+                    pgClient.release();
+                    await pgPool.end();
+
+                    // closeDbConnection(pgClient,pgPool);
+                    
+                    msjeResponse =`El archivo ${hostsDoc} fue creado se encuentra en la ruta ${pathWorkSpace}\n Las rutas actualizadas son ${cantRegistrosAfectados}`; 
+
+                    stream.end();
+                    stream.on('close',()=>{
+                        res.send(msjeResponse);
+                    });  
+                }catch(error){
+                    console.log(error);
+                }
+
+              
+            } 
+        } catch (error) {
+         console.log(error);   
+        }
+    }
 }
 
