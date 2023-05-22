@@ -18,9 +18,9 @@ html
                 input (type="hidden" name="pass_postgres" value ="postgres" readonly required)
    
             input(type="hidden" name="dbSelection" value= `${context.dbSelection}` readonly required)
-            label(for="download_path") Archivo a restaurar #{context.filename}
+            label(for="downloadPath") Archivo a restaurar #{context.filename}
             br 
-            input(type="text" name="download_path" value=`${context.downloadPath}` readonly required)
+            input(type="text" name="downloadPath" value=`${context.downloadPath}` readonly required)
             br
             br
             input(type="submit" value="Restore")

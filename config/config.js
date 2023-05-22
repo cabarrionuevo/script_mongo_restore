@@ -20,5 +20,6 @@ module.exports = {
     FOLDER_IN_BUCKET_POSTGRES: process.env.FOLDER_IN_BUCKET_POSTGRES,
     PG_HOST: process.env.PG_HOST,
     PG_DBNAME: process.env.PG_DBNAME,
-    PG_PORT: process.env.PG_PORT
+    PG_PORT: process.env.PG_PORT,
+    PREFIX_LOCALHOST_URL: process.env.PREFIX_LOCALHOST_URL
 }

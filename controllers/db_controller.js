@@ -14,10 +14,6 @@ const pgStrCon={
                 'password':'postgres'
             };
 
-const prefix = 'dev-';
-const hostsDoc="hosts.txt";
-
-let pathWorkSpace="/home/gleegstra/Escritorio/Trabajo/";
 
 const pgClient={
     query: async(pgStrCon,strQuery)=>{
@@ -30,7 +26,21 @@ const pgClient={
     }
 }
 
+const prefix = config.PREFIX_LOCALHOST_URL;
+const hostsDoc="hosts.txt";
 
+let pathWorkSpace="/home/charly2790/Documentos/";
+
+async function openDbConnection(StrConecction){
+    let pgPool = new Pool(pgStrCon);
+    
+    return pgClient = await pgPool.connect();
+}
+
+async function closeDbConnection(pgClient,pgPool){
+    pgClient.release();
+    await pgPool.end();
+}
 
 function runInShell(cmd, args, env = null) {
     return new Promise((resolve, reject) => {
@@ -174,7 +184,7 @@ module.exports = {
     },
     hosts: async function(req,res){
         try {
-            let updates = 0;
+            let msjeResponse = "";
             let pgPool = new Pool(pgStrCon);
             let pgClient = await pgPool.connect();
             let query = `SELECT "idPrograma",url FROM programas;`;
@@ -182,32 +192,49 @@ module.exports = {
             pgClient.release();
             await pgPool.end();
             if (results.rows.length > 0);{
-                let updateQuery='UPDATE programas SET url=$1 WHERE url = $2';
+
+                let updateQuery = `UPDATE programas SET url=CONCAT('${prefix}',url)`;
 
                 if(pathWorkSpace===""){
                     pathWorkSpace="/";
                 }
+                
                 let pathDoc=`${pathWorkSpace}`+`${hostsDoc}`;  
                 let stream = fs.createWriteStream(pathDoc);
                 results.rows.forEach(async (row)=>{
                     try{
                         stream.write(`127.0.0.1     ${prefix}${row.url}\n`);
                         stream.write(`127.0.0.1     api.${prefix}${row.url}\n\n`);
-                        let pgPool= new Pool(pgStrCon); 
-                        let pgClient = await pgPool.connect();
-                        updates+=(await pgClient.query(updateQuery,[`${prefix}${row.url}`,`${row.url}`])).rowCount;
-                        pgClient.release();
-                        await pgPool.end();
 
                     }catch(error){
                         console.log(error);
                     }
                 });
 
-                stream.end();
-                stream.on('close',()=>{
-                    res.send(`El archivo ${hostsDoc} fue creado se encuentra en la ruta ${pathWorkSpace}\n Las rutas actualizadas son ${updates}`);
-                });  
+                try{
+                    let pgPool= new Pool(pgStrCon); 
+                    let pgClient = await pgPool.connect();
+
+                    let cantRegistrosAfectados = (await pgClient.query(updateQuery)).rowCount;
+
+                    // let cantRegistrosAfectados= await pgClient.query(pgStrCon,updateQuery);
+
+                    pgClient.release();
+                    await pgPool.end();
+
+                    // closeDbConnection(pgClient,pgPool);
+                    
+                    msjeResponse =`El archivo ${hostsDoc} fue creado se encuentra en la ruta ${pathWorkSpace}\n Las rutas actualizadas son ${cantRegistrosAfectados}`; 
+
+                    stream.end();
+                    stream.on('close',()=>{
+                        res.send(msjeResponse);
+                    });  
+                }catch(error){
+                    console.log(error);
+                }
+
+              
             } 
         } catch (error) {
          console.log(error);   
