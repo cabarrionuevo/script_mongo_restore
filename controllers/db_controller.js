@@ -5,6 +5,7 @@ const path = require('path');
 const { spawn } = require('child_process');
 const {Pool} = require('pg');
 const { ifError } = require('assert');
+const { MongoClient } = require('mongodb');
 
 const pgStrCon={
                 'host':config.PG_HOST,
@@ -15,16 +16,16 @@ const pgStrCon={
             };
 
 
-const pgClient={
-    query: async(pgStrCon,strQuery)=>{
-        let pgPool = new Pool(pgStrCon);
-        let client = await pgPool.connect();
-        let result= await client.query(strQuery);
-        client.release();
-        await pgPool.end();
-        return result;
-    }
-}
+// const pgClient={
+//     query: async(pgStrCon,strQuery)=>{
+//         let pgPool = new Pool(pgStrCon);
+//         let client = await pgPool.connect();
+//         let result= await client.query(strQuery);
+//         client.release();
+//         await pgPool.end();
+//         return result;
+//     }
+// }
 
 const prefix = config.PREFIX_LOCALHOST_URL;
 const hostsDoc="hosts.txt";
@@ -181,6 +182,33 @@ module.exports = {
     },
     mask: async function(req,res){
         res.send('desde mask');
+
+        tableFields = {
+            
+            postgres:{
+                tablas:[
+                    {
+                    nombre: "programas",
+                    campos:["emailContacto","emailRemitente","emailsExportacionUsuarios"]
+                    },
+                    {
+                    nombre:"proveedores",
+                    campos:["emailContacto","emailCanjes"]
+                    }
+                ]
+            },
+            mongo:{
+            
+            }	
+        }
+
+        const mongoUrl = 'mongodb://localhost/mongo-backend';
+
+        MongoClient.connect(mongoUrl,function(err,db){
+            console.log("connected");
+            db.close();
+        });
+                
     },
     hosts: async function(req,res){
         try {
