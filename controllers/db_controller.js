@@ -4,8 +4,12 @@ const config = require('../config/config');
 const path = require('path');
 const { spawn } = require('child_process');
 const {Pool} = require('pg');
+<<<<<<< HEAD
 const { ifError } = require('assert');
 const { MongoClient } = require('mongodb');
+=======
+const {MongoClient} = require('mongodb');
+>>>>>>> 7b8d0a5aadf9f8f03219f762f969bf4e884fde06
 
 const pgStrCon={
                 'host':config.PG_HOST,
@@ -16,6 +20,7 @@ const pgStrCon={
             };
 
 
+<<<<<<< HEAD
 // const pgClient={
 //     query: async(pgStrCon,strQuery)=>{
 //         let pgPool = new Pool(pgStrCon);
@@ -26,11 +31,23 @@ const pgStrCon={
 //         return result;
 //     }
 // }
+=======
+/*const pgClient={
+    query: async(pgStrCon,strQuery)=>{
+        let pgPool = new Pool(pgStrCon);
+        let client = await pgPool.connect();
+        let result= await client.query(strQuery);
+        client.release();
+        await pgPool.end();
+        return result;
+    }
+}*/
+>>>>>>> 7b8d0a5aadf9f8f03219f762f969bf4e884fde06
 
 const prefix = config.PREFIX_LOCALHOST_URL;
 const hostsDoc="hosts.txt";
 
-let pathWorkSpace="/home/charly2790/Documentos/";
+let pathWorkSpace="/home/gleegstra/Escritorio/Trabajo/";
 
 async function openDbConnection(StrConecction){
     let pgPool = new Pool(pgStrCon);
@@ -181,10 +198,7 @@ module.exports = {
         }
     },
     mask: async function(req,res){
-        res.send('desde mask');
-
-        tableFields = {
-            
+        let mask = {
             postgres:{
                 tablas:[
                     {
@@ -198,17 +212,45 @@ module.exports = {
                 ]
             },
             mongo:{
+                coleccions:[
+                {
+                    nombre:"perfils",
+                    selector:'{"username":{"$nin":["admin","admin_ashiwea"]}}',
+                    query:'{"$set":{"otros.email":"otro@email.com"}}'
+                },
+                {
+                    nombre:"canalretails",
+                    selector:'{"email":{"$exists":true}}',
+                    query:'{"$set":{"email":"otro@email.com"}}'
+                },
+                {
+                    nombre:"clienteretails",
+                    selector:'{"email":{"$exists":true}}',
+                    query:'{"$set":{"email":"otro@email.com"}}'
+                }
+                ]
             
             }	
         }
+        
+        const client = new MongoClient(config.MONGO_URL,{monitorCommands:true});
 
-        const mongoUrl = 'mongodb://localhost/mongo-backend';
+        let mjs = '';
 
-        MongoClient.connect(mongoUrl,function(err,db){
-            console.log("connected");
-            db.close();
-        });
-                
+        await client.connect();
+
+        for (col of mask.mongo.coleccions){
+            let coleccion = client.db().collection(col.nombre);
+            let selector = JSON.parse(col.selector);
+            let query = JSON.parse(col.query);
+            let results = await coleccion.updateMany(selector,query);
+            
+            mjs += `Cantidad Documentos modificados de la coleccion ${col.nombre}: ${results.modifiedCount}\n`;
+        }    
+
+        client.close();
+        
+        res.send(mjs);
     },
     hosts: async function(req,res){
         try {
