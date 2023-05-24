@@ -174,7 +174,7 @@ module.exports = {
                 result = await runInShell(cmd, args,env);
             }
 
-            result ? res.send('Restore successful') : res.send('Upps it was a problem');
+            result ? res.redirect('/'): res.send('Upps it was a problem');
         } catch (error) {
             console.log(error);
             res.send('Uppps something was wrong');
