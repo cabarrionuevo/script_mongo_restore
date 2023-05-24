@@ -4,12 +4,7 @@ const config = require('../config/config');
 const path = require('path');
 const { spawn } = require('child_process');
 const {Pool} = require('pg');
-<<<<<<< HEAD
-const { ifError } = require('assert');
-const { MongoClient } = require('mongodb');
-=======
 const {MongoClient} = require('mongodb');
->>>>>>> 7b8d0a5aadf9f8f03219f762f969bf4e884fde06
 
 const pgStrCon={
                 'host':config.PG_HOST,
@@ -20,18 +15,7 @@ const pgStrCon={
             };
 
 
-<<<<<<< HEAD
-// const pgClient={
-//     query: async(pgStrCon,strQuery)=>{
-//         let pgPool = new Pool(pgStrCon);
-//         let client = await pgPool.connect();
-//         let result= await client.query(strQuery);
-//         client.release();
-//         await pgPool.end();
-//         return result;
-//     }
-// }
-=======
+
 /*const pgClient={
     query: async(pgStrCon,strQuery)=>{
         let pgPool = new Pool(pgStrCon);
@@ -42,12 +26,11 @@ const pgStrCon={
         return result;
     }
 }*/
->>>>>>> 7b8d0a5aadf9f8f03219f762f969bf4e884fde06
 
 const prefix = config.PREFIX_LOCALHOST_URL;
 const hostsDoc="hosts.txt";
 
-let pathWorkSpace="/home/gleegstra/Escritorio/Trabajo/";
+let pathWorkSpace="/home/charly2790/Documentos";
 
 async function openDbConnection(StrConecction){
     let pgPool = new Pool(pgStrCon);
@@ -198,16 +181,19 @@ module.exports = {
         }
     },
     mask: async function(req,res){
+        
+        emailMask = config.EMAIL_MASK;
+        
         let mask = {
             postgres:{
                 tablas:[
-                    {
-                    nombre: "programas",
-                    campos:["emailContacto","emailRemitente","emailsExportacionUsuarios"]
+                    {                    
+                    nombre: 'programas',                    
+                    set: `"emailContacto"='${emailMask}',"emailRemitente"='${emailMask}',"emailsExportacionUsuarios"='${emailMask}'`,                                   
                     },
                     {
-                    nombre:"proveedores",
-                    campos:["emailContacto","emailCanjes"]
+                    nombre:'proveedores',                    
+                    set: `"emailContacto"='${emailMask}',"emailCanjes"='${emailMask}'`
                     }
                 ]
             },
@@ -215,24 +201,25 @@ module.exports = {
                 coleccions:[
                 {
                     nombre:"perfils",
-                    selector:'{"username":{"$nin":["admin","admin_ashiwea"]}}',
-                    query:'{"$set":{"otros.email":"otro@email.com"}}'
+                    selector:'{"username":{"$nin":["admin","admin_ashiwea"]}}',                    
+                    query:`{"$set":{"otros.email":"${emailMask}"}}`
                 },
                 {
                     nombre:"canalretails",
-                    selector:'{"email":{"$exists":true}}',
-                    query:'{"$set":{"email":"otro@email.com"}}'
+                    selector:'{"email":{"$exists":true}}',                    
+                    query:`{"$set":{"email":"${emailMask}"}}`
                 },
                 {
                     nombre:"clienteretails",
-                    selector:'{"email":{"$exists":true}}',
-                    query:'{"$set":{"email":"otro@email.com"}}'
+                    selector:'{"email":{"$exists":true}}',                    
+                    query:`{"$set":{"email":"${emailMask}"}}`
+                    
                 }
                 ]
             
             }	
         }
-        
+                
         const client = new MongoClient(config.MONGO_URL,{monitorCommands:true});
 
         let mjs = '';
@@ -249,6 +236,23 @@ module.exports = {
         }    
 
         client.close();
+
+        //Ofuscación tablas postgres
+        let pgPool = new Pool(pgStrCon);
+        let pgClient = await pgPool.connect();
+
+        let tablas = mask.postgres.tablas;
+        
+        for(tabla of tablas){
+            
+            let updateQuery = `UPDATE ${tabla.nombre} SET ${tabla.set}`;
+            let cantRegistrosAfectados = (await pgClient.query(updateQuery)).rowCount;            
+            mjs += `Cantidad de registros afectados de la tabla ${tabla.nombre}: ${cantRegistrosAfectados}\n`
+        
+        }       
+                
+        pgClient.release();
+        await pgPool.end();
         
         res.send(mjs);
     },

@@ -22,5 +22,6 @@ module.exports = {
     PG_DBNAME: process.env.PG_DBNAME,
     PG_PORT: process.env.PG_PORT,
     PREFIX_LOCALHOST_URL: process.env.PREFIX_LOCALHOST_URL,
-    MONGO_URL:process.env.MONGO_URL
+    MONGO_URL:process.env.MONGO_URL,
+    EMAIL_MASK: process.env.EMAIL_MASK
 }
