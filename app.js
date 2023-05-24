@@ -10,4 +10,8 @@ app.use(bodyParser.urlencoded({extended: true}));
 
 app.use('/db',dbRoutes);
 
+app.get('/',function(req,res){
+    res.render('home')
+})
+
 app.listen(4000);

@@ -186,7 +186,7 @@ module.exports = {
         
         let mask = {
             postgres:{
-                tablas:[
+                tables:[
                     {                    
                     nombre: 'programas',                    
                     set: `"emailContacto"='${emailMask}',"emailRemitente"='${emailMask}',"emailsExportacionUsuarios"='${emailMask}'`,                                   
@@ -198,7 +198,7 @@ module.exports = {
                 ]
             },
             mongo:{
-                coleccions:[
+                colections:[
                 {
                     nombre:"perfils",
                     selector:'{"username":{"$nin":["admin","admin_ashiwea"]}}',                    
@@ -226,7 +226,7 @@ module.exports = {
 
         await client.connect();
 
-        for (col of mask.mongo.coleccions){
+        for (col of mask.mongo.colections){
             let coleccion = client.db().collection(col.nombre);
             let selector = JSON.parse(col.selector);
             let query = JSON.parse(col.query);
@@ -241,7 +241,7 @@ module.exports = {
         let pgPool = new Pool(pgStrCon);
         let pgClient = await pgPool.connect();
 
-        let tablas = mask.postgres.tablas;
+        let tablas = mask.postgres.tables;
         
         for(tabla of tablas){
             
