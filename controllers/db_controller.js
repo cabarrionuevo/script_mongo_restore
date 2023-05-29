@@ -14,23 +14,10 @@ const pgStrCon={
                 'password':'postgres'
             };
 
-
-
-/*const pgClient={
-    query: async(pgStrCon,strQuery)=>{
-        let pgPool = new Pool(pgStrCon);
-        let client = await pgPool.connect();
-        let result= await client.query(strQuery);
-        client.release();
-        await pgPool.end();
-        return result;
-    }
-}*/
-
 const prefix = config.PREFIX_LOCALHOST_URL;
 const hostsDoc="hosts.txt";
 
-let pathWorkSpace="/home/charly2790/Documentos";
+let pathWorkSpace = "";
 
 async function openDbConnection(StrConecction){
     let pgPool = new Pool(pgStrCon);
