@@ -24,3 +24,14 @@ html
                     a(href="/db/host",class="nav-link text-white")
                         i(class="fa-solid fa-hat-wizard fa-l")
                         span(class="ms-2") Hosts
+            script.
+                var list = document.getElementById("list");
+                var lis = list.getElementsByTagName("li");
+                var anclas = lis.getElementsByTagName("a");
+                for (var i = 0; i < anclas.length; i++) {
+                    anclas[i].addEventListener("click", function() {
+                    var current = document.getElementsByClassName("active");
+                    current[0].className = current[0].className.replace(" active", "");
+                    this.className += " active";
+                    });
+                }
